@@ -46,22 +46,36 @@ router.post('/image', uploadS3.array('upload', 5), async (req, res, next) => {
     }
 });
 
-// * 조회
-router.get('/get/:num/views', async (req, res) => {
+// * 전체 포스트 조회 또는 카테고리별 포스트 조회
+router.get('/list/:id?/view', async (req, res) => {
     try {
-        const postCount = await Post.countDocuments();
-        const postsList = await Post.find().skip(Number(req.params.skip)).sort({ date: -1 });
+        const { id, categoryId } = req.params; // URL 파라미터에서 status와 categoryId 가져오기
+        let postsList;
 
+        if (id !== 'all') {
+            const category = await Category.findById(id); // ID로 카테고리 조회
+            if (!category) {
+                return res.id(404).json({ message: '카테고리를 찾을 수 없습니다.ㅠㅠ' });
+            }
+
+            postsList = await Post.find({ category: category._id }).sort({ date: -1 });
+        } else {
+            postsList = await Post.find().sort({ date: -1 });
+        }
+
+        const postCount = postsList.length;
         const categoryFindResult = await Category.find();
         const visitorsCount = await Visitor.findOne();
 
-        const result = { postsList, categoryFindResult, postCount, visitorsCount };
+        const result = { postsList, categoryFindResult, postCount, visitorsCount, id };
         res.json(result);
     } catch (e) {
         console.log(e);
-        res.json({ msg: '더 이상 포스트가 없습니다' });
+        res.status(500).json({ msg: '서버 오류가 발생했습니다.' });
     }
 });
+
+export default router;
 
 // * 게시글 업로드
 router.post('/', auth, uploadS3.none(), async (req, res, next) => {
@@ -116,7 +130,7 @@ router.post('/', auth, uploadS3.none(), async (req, res, next) => {
 });
 
 /// * 상세 게시글 조회
-router.get('/:id', async (req, res, next) => {
+router.get('/:id/detail', async (req, res, next) => {
     try {
         const post = await Post.findById(req.params.id).populate('creator', 'name').populate({ path: 'category', select: 'categoryName' });
         post.views += 1;
@@ -235,7 +249,6 @@ router.post('/:id/likes', async (req, res, next) => {
         if (userLikedPost) {
             // *이미 좋아요를 누른 경우, 좋아요 취소
             likes = likes.filter((likeId) => likeId.toString() !== userId);
-            console.log(likes, '<<<<post.likes');
         } else {
             // *좋아요 추가
             likes.push(userId);
@@ -249,25 +262,3 @@ router.post('/:id/likes', async (req, res, next) => {
         next(e);
     }
 });
-
-// * 카테고리 조회
-router.get('/category/:categoryName', async (req, res, next) => {
-    try {
-        const result = await Category.findOne(
-            {
-                categoryName: {
-                    $regex: req.params.categoryName,
-                    $options: 'i',
-                },
-            },
-            'posts',
-        ).populate({ path: 'posts' });
-        console.log(result, 'Category Find result');
-        res.send({ ...result, posts: result.posts.reverse() });
-    } catch (e) {
-        console.log(e);
-        next(e);
-    }
-});
-
-export default router;
