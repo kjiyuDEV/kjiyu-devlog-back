@@ -22,26 +22,12 @@ console.log('환경변수 확인:', {
     PORT: process.env.PORT,
 });
 const prod = process.env.NODE_ENV === 'production';
-
-if (prod)
-    app.all('*', (req, res, next) => {
-        let protocol = req.headers['x-forward-proto'] || req.protocol;
-        if (protocol === 'https') {
-            next();
-        } else {
-            let to = `https://${req.hostname}${req.url}`;
-            res.redirect(to);
-        }
-    });
-
-const PORT = process.env.PORT || 5000; // 기본값 설정
-
 app.use(hpp());
 app.use(helmet({ contentSecurityPolicy: false }));
 if (prod) {
     app.use(
         cors({
-            origin: ['https://kjiyu-devlog.com', /\.kjiyu-devlog\.com$/],
+            origin: ['https://kjiyu-devlog.com', /\.kjiyulog\.com$/],
             credentials: true,
         }),
     );
@@ -67,23 +53,33 @@ app.get('/', (req, res) => {
     res.json({ message: '서버가 정상적으로 실행중입니다.' });
 });
 
-try {
-    if (!process.env.MONGO_URI) {
-        throw new Error('MONGO_URI is not defined');
-    }
-    await mongoose.connect(process.env.MONGO_URI);
-    console.log('MongoDB connected');
-} catch (err) {
-    console.error('MongoDB connection error:', err);
-    process.exit(1);
-}
+app.use(express.json());
 
-// Routes
+mongoose
+    .connect(process.env.MONGO_URI, {
+        useNewUrlParser: true,
+        useUnifiedTopology: true,
+    })
+    .then(() => console.log('MongoDB connecting Success!!'))
+    .catch((e) => console.log(e));
+
+// Use routes
+if (prod)
+    app.all('*', (req, res, next) => {
+        let protocol = req.headers['x-forward-proto'] || req.protocol;
+        if (protocol === 'https') {
+            next();
+        } else {
+            let to = `https://${req.hostname}${req.url}`;
+            res.redirect(to);
+        }
+    });
+
+//
 app.use('/api/post', postRoutes);
 app.use('/api/user', userRoutes);
 app.use('/api/auth', authRoutes);
 app.use('/api/visitor', visitorRoutes);
-
-app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
+if (!prod) app.listen(process.env.PORT, () => console.log(`Server running on port ${process.env.PORT}`));
 
 export default app;
