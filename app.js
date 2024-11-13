@@ -27,7 +27,7 @@ app.use(helmet({ contentSecurityPolicy: false }));
 if (prod) {
     app.use(
         cors({
-            origin: ['https://kjiyu-devlog.com', /\.kjiyulog\.com$/],
+            origin: ['https://kjiyu-devlog.com', /\.kjiyu-devlog\.com$/],
             credentials: true,
         }),
     );
@@ -63,6 +63,7 @@ mongoose
 // Use routes
 if (prod)
     app.all('*', (req, res, next) => {
+        console.log('log check this line')
         let protocol = req.headers['x-forward-proto'] || req.protocol;
         if (protocol === 'https') {
             next();
