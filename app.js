@@ -24,7 +24,7 @@ console.log('환경변수 확인:', {
 const prod = process.env.NODE_ENV === 'production';
 app.use(hpp());
 app.use(helmet({ contentSecurityPolicy: false }));
-if (prod) {
+if (process.env.NODE_ENV === 'production') {
     app.use(
         cors({
             origin: ['https://kjiyu-devlog.com', /\.kjiyu-devlog\.com$/],
@@ -61,7 +61,7 @@ mongoose
     .catch((e) => console.log(e));
 
 // Use routes
-if (prod)
+if (process.env.NODE_ENV === 'production')
     app.all('*', (req, res, next) => {
         console.log('log check this line')
         let protocol = req.headers['x-forward-proto'] || req.protocol;
