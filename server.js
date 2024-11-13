@@ -9,7 +9,7 @@ const { PORT } = config;
 greenlock
     .init({
         packageRoot: path.join(__dirname, '../'),
-        configDir: path.join(__dirname, '../', 'blogserver/config/greenlock.d'),
+        configDir: path.join(__dirname, '../', 'kjiyu-devlog-back/config/greenlock.d'),
         maintainerEmail: 'u_1379@naver.com',
         cluster: false,
     })
