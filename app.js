@@ -22,6 +22,7 @@ console.log('환경변수 확인:', {
     PORT: process.env.PORT,
 });
 const prod = process.env.NODE_ENV === 'production';
+console.log(prod, process.env.NODE_ENV === 'production', 'prod check in koyeb');
 app.use(hpp());
 app.use(helmet({ contentSecurityPolicy: false }));
 if (process.env.NODE_ENV === 'production') {
