@@ -26,20 +26,22 @@ console.log(prod, process.env.NODE_ENV === 'production', 'prod check in koyeb');
 app.use(hpp());
 app.use(helmet({ contentSecurityPolicy: false }));
 if (process.env.NODE_ENV === 'production') {
-    app.use(
-        cors({
-            origin: ['https://kjiyu-devlog.com', /\.kjiyu-devlog\.com$/],
-            credentials: true,
-        }),
-    );
-} else {
-    app.use(
-        cors({
-            origin: true,
-            credentials: true,
-        }),
-    );
-}
+   app.use(
+    cors({
+        origin: function (origin, callback) {
+            if (
+                !origin || 
+                origin === 'https://kjiyu-devlog.com' || 
+                origin === 'https://www.kjiyu-devlog.com'
+            ) {
+                callback(null, true);  
+            } else {
+                callback(new Error('Not allowed by CORS'));  // CORS 거부
+            }
+        },
+        credentials: true,
+    })
+);
 app.use(cors({ origin: true, credentials: true }));
 app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ limit: '10mb', extended: false }));
