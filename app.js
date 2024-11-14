@@ -62,16 +62,16 @@ mongoose
     .catch((e) => console.log(e));
 
 // Use routes
-app.all('*', (req, res, next) => {
-    console.log('log check this line');
-    let protocol = req.headers['x-forward-proto'] || req.protocol;
-    if (protocol === 'https') {
-        next();
-    } else {
-        let to = `https://${req.hostname}${req.url}`;
-        res.redirect(to);
-    }
-});
+if (prod) {
+    app.all('*', (req, res, next) => {
+        const protocol = req.headers['x-forwarded-proto'] || req.protocol;
+        if (protocol !== 'https') {
+            res.redirect(`https://${req.hostname}${req.url}`);
+        } else {
+            next();
+        }
+    });
+}
 
 //
 app.use('/api/post', postRoutes);
