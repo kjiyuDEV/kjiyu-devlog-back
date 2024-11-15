@@ -18,61 +18,63 @@ const app = express();
 
 // 환경변수 확인
 console.log('환경변수 확인:', {
-    MONGO_URI: process.env.MONGO_URI,
-    PORT: process.env.PORT,
+  MONGO_URI: process.env.MONGO_URI,
+  PORT: process.env.PORT,
 });
 const prod = process.env.NODE_ENV === 'production';
 console.log(prod, process.env.NODE_ENV === 'production', 'prod check in koyeb');
 app.use(hpp());
 app.use(helmet({ contentSecurityPolicy: false }));
 if (process.env.NODE_ENV === 'production') {
-   app.use(
+  app.use(
     cors({
-        origin: function (origin, callback) {
-            if (
-                !origin || 
-                origin === 'https://kjiyu-devlog.com' || 
-                origin === 'https://www.kjiyu-devlog.com'
-            ) {
-                callback(null, true);  
-            } else {
-                callback(new Error('Not allowed by CORS'));  // CORS 거부
-            }
-        },
-        credentials: true,
+      origin: function (origin, callback) {
+        if (
+          !origin ||
+          origin === 'https://kjiyu-devlog.com' ||
+          origin === 'https://www.kjiyu-devlog.com' ||
+          origin === 'https://kjiyudev.github.io'
+        ) {
+          callback(null, true);
+        } else {
+          callback(new Error('Not allowed by CORS')); // CORS 거부
+        }
+      },
+      credentials: true,
     })
-);
+  );
+}
 // app.use(cors({ origin: true, credentials: true }));
 app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ limit: '10mb', extended: false }));
 app.use(express.json());
 if (process.env.NODE_ENV === 'production') {
-    app.use(morgan('combined'));
+  app.use(morgan('combined'));
 } else {
-    app.use(morgan('dev'));
+  app.use(morgan('dev'));
 }
 
 app.get('/', (req, res) => {
-    res.json({ message: '서버가 정상적으로 실행중입니다.' });
+  res.json({ message: '서버가 정상적으로 실행중입니다.' });
 });
 
 app.use(express.json());
 
 mongoose
-    .connect(process.env.MONGO_URI)
-    .then(() => console.log('MongoDB connecting Success!!'))
-    .catch((e) => console.log(e));
+  .connect(process.env.MONGO_URI)
+  .then(() => console.log('MongoDB connecting Success!!'))
+  .catch((e) => console.log(e));
 
 // Use routes
 if (prod) {
-    app.all('*', (req, res, next) => {
-        const protocol = req.headers['x-forwarded-proto'] || req.protocol;
-        if (protocol !== 'https') {
-            res.redirect(`https://${req.hostname}${req.url}`);
-        } else {
-            next();
-        }
-    });
+  app.all('*', (req, res, next) => {
+    const protocol = req.headers['x-forwarded-proto'] || req.protocol;
+    if (protocol !== 'https') {
+      res.redirect(`https://${req.hostname}${req.url}`);
+    } else {
+      next();
+    }
+  });
 }
 
 //
@@ -80,6 +82,9 @@ app.use('/api/post', postRoutes);
 app.use('/api/user', userRoutes);
 app.use('/api/auth', authRoutes);
 app.use('/api/visitor', visitorRoutes);
-if (!prod) app.listen(process.env.PORT, () => console.log(`Server running on port ${process.env.PORT}`));
+if (!prod)
+  app.listen(process.env.PORT, () =>
+    console.log(`Server running on port ${process.env.PORT}`)
+  );
 
 export default app;
