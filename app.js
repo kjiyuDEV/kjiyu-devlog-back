@@ -33,7 +33,7 @@ if (process.env.NODE_ENV === 'production') {
           !origin ||
           origin === 'https://kjiyu-devlog.com' ||
           origin === 'https://www.kjiyu-devlog.com' ||
-          origin === 'https://kjiyudev.github.io'
+          origin === 'https://kjiyudev.github.io/'
         ) {
           callback(null, true);
         } else {
