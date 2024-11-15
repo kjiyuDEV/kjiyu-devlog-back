@@ -43,6 +43,8 @@ if (process.env.NODE_ENV === 'production') {
       credentials: true,
     })
   );
+
+  app.options('*', cors()); // 모든 경로에 대해 OPTIONS 요청 처리
 }
 // app.use(cors({ origin: true, credentials: true }));
 app.use(express.json({ limit: '10mb' }));
