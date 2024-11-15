@@ -25,31 +25,34 @@ const prod = process.env.NODE_ENV === 'production';
 console.log(prod, process.env.NODE_ENV === 'production', 'prod check in koyeb');
 app.use(hpp());
 app.use(helmet({ contentSecurityPolicy: false }));
-if (process.env.NODE_ENV === 'production') {
-  app.use(
-    cors({
-      origin: function (origin, callback) {
-        if (
-          !origin ||
-          origin === 'https://kjiyu-devlog.com' ||
-          origin === 'https://www.kjiyu-devlog.com' ||
-          origin === 'https://kjiyudev.github.io/'
-        ) {
-          callback(null, true);
-        } else {
-          callback(new Error('Not allowed by CORS')); // CORS 거부
-        }
-      },
-      credentials: true,
-    })
-  );
 
+// CORS 설정
+const whitelist = [
+  'http://localhost:8080',
+  'http://localhost:8081',
+  'https://kjiyu-devlog.com',
+  'https://www.kjiyu-devlog.com',
+  'https://kjiyudev.github.io',
+];
+
+const corsOptions = {
+  origin: function (origin, callback) {
+    if (!origin || whitelist.indexOf(origin) !== -1) {
+      callback(null, true);
+    } else {
+      callback(new Error('Not Allowed Origin!')); // CORS 비허용
+    }
+  },
+  credentials: true,
+};
+
+if (process.env.NODE_ENV === 'production') {
+  app.use(cors(corsOptions)); // CORS 옵션 적용
   app.options('*', cors()); // 모든 경로에 대해 OPTIONS 요청 처리
 }
-// app.use(cors({ origin: true, credentials: true }));
+
 app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ limit: '10mb', extended: false }));
-app.use(express.json());
 if (process.env.NODE_ENV === 'production') {
   app.use(morgan('combined'));
 } else {
@@ -59,8 +62,6 @@ if (process.env.NODE_ENV === 'production') {
 app.get('/', (req, res) => {
   res.json({ message: '서버가 정상적으로 실행중입니다.' });
 });
-
-app.use(express.json());
 
 mongoose
   .connect(process.env.MONGO_URI)
@@ -79,11 +80,11 @@ if (prod) {
   });
 }
 
-//
 app.use('/api/post', postRoutes);
 app.use('/api/user', userRoutes);
 app.use('/api/auth', authRoutes);
 app.use('/api/visitor', visitorRoutes);
+
 if (!prod)
   app.listen(process.env.PORT, () =>
     console.log(`Server running on port ${process.env.PORT}`)
