@@ -30,6 +30,7 @@ router.post('/', (req, res) => {
             if (!isMatch)
                 return res.status(400).json({
                     msg: '비밀번호가 일치하지 않아요',
+                    code: '01',
                 });
             jwt.sign({ id: user.id }, JWT_SECRET, { expiresIn: '2 days' }, (err, token) => {
                 if (err) throw err;
