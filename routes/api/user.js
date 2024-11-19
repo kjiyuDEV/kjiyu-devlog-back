@@ -11,7 +11,7 @@ import User from '../../models/user.js';
 const router = express.Router();
 
 // * 회원가입
-router.post('/', (req, res) => {
+router.post('/signup', (req, res) => {
     console.log(req);
     const { name, userId, password, nickname } = req.body;
 
