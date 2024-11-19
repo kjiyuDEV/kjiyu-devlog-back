@@ -250,7 +250,7 @@ router.post('/:id/edit', async (req, res, next) => {
 // * 게시글 좋아요 등록
 router.post('/:id/like', async (req, res, next) => {
   const postId = req.params.id;
-  const userId = req.body.body.userId;
+  const userId = req.body.userId;
   console.log(req.body, '<req');
   console.log(userId, '<userId');
   try {
