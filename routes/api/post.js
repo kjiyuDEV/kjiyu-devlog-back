@@ -198,6 +198,21 @@ router.post('/:id/comments', async (req, res, next) => {
   }
 });
 
+// * 상세 게시글 댓글 삭제
+router.delete('/:postId/comments/:commentId/delete', async (req, res, next) => {
+  const { postId, commentId } = req.params;
+  try {
+    await Comment.findByIdAndDelete(commentId);
+    await Post.findByIdAndUpdate(postId, {
+      $pull: { comments: commentId },
+    });
+    return res.json({ success: true });
+  } catch (e) {
+    console.log(e);
+    next(e);
+  }
+});
+
 // * 게시글 삭제
 router.delete('/:id', auth, async (req, res) => {
   await Post.deleteMany({ _id: req.params.id });
