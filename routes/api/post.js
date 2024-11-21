@@ -191,7 +191,9 @@ router.post('/:id/comments', async (req, res, next) => {
         },
       },
     });
-    res.json(newComment);
+    const post = await Post.findById(req.body.id);
+    await post.save();
+    res.json(post);
   } catch (e) {
     console.log(e);
     next(e);
